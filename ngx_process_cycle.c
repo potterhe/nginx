@@ -13,7 +13,7 @@ ngx_master_process_cycle()
 {
     sigset_t set;
     /*
-     * signal
+     * block a lot signals
      */
     sigemptyset(&set);
     sigaddset(&set, SIGHUP); 
@@ -23,8 +23,11 @@ ngx_master_process_cycle()
     }
     sigemptyset(&set);
 
-
+    /* 在nginx的源代码中没能找到初始化全局数组 ngx_processes 的代码
+     * 这里是一个合适的位置
+     */
     ngx_init_processes_array();
+
     ngx_start_worker_processes(2);
 
     /*
@@ -32,6 +35,10 @@ ngx_master_process_cycle()
      */
     for ( ; ; ) {
     
+	/* 
+	 * master process will be blocked here,
+	 * waiting for a signal to wake up
+	 */
 	sigsuspend(&set);
 	/*TODO ngx_signal_handler() had returned */
 	ngx_signal_worker_processes(SIGHUP);
