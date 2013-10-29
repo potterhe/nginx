@@ -1,7 +1,11 @@
+#include <unistd.h>
 #include <signal.h>
 #include "ngx_process.h"
+#include "ngx_process_cycle.h"
 
 int ngx_reconfigure;
+int ngx_terminate;
+
 extern ngx_process_t ngx_processes[NGX_MAX_PROCESSES];
 
 static void ngx_worker_process_cycle();
@@ -40,8 +44,36 @@ ngx_master_process_cycle()
 	 * waiting for a signal to wake up
 	 */
 	sigsuspend(&set);
-	/*TODO ngx_signal_handler() had returned */
-	ngx_signal_worker_processes(SIGHUP);
+
+	/* 
+	 * here, ngx_signal_handler() had returned
+	 * ngx_signal_handler() 会根据接收到的信号，设置几个全局变量的值
+	 * 我们需要在这里检测这几全局值，正确响应信号约定的行为
+	 *
+	 * ngx_terminate "nginx -s stop" or "kill -s SIGTERM MASTER_PID"
+	 *
+	 * for this option, nginx had optimized. 
+	 * first, master send command to worker process by IPC socket.
+	 * if worker process did not quit in 1000 ms, master send SIGKILL signal.
+	 */
+	if (ngx_terminate) {
+	    ngx_signal_worker_processes(SIGTERM);
+	    continue;
+	}
+
+	/* 
+	 * ngx_reconfigure "nginx -s reload" or "kill -s SIGHUP MASTER_PID"
+	 *
+	 * 在实现重载配置文件功能时,nginx首先孵化新的worker进程,新进程读取新重的配置文件
+	 * 然后向旧的worker进程发送SIGQUIT command,通过IPC socket
+	 */
+	if (ngx_reconfigure) {
+	    ngx_reconfigure = 0;
+
+	    /*TODO ngx_start_worker_processes()*/
+	    ngx_signal_worker_processes(SIGQUIT);
+	}
+
     }
 }
 
@@ -83,7 +115,7 @@ static void
 ngx_signal_worker_processes(int signo)
 {
     int i, command;
-    char c[] = "abc";
+    char c[10];
     /**
      * NGX_SHUTDOWN_SIGNAL QUIT
      * NGX_TERMINATE_SIGNAL TERM, 
@@ -92,7 +124,13 @@ ngx_signal_worker_processes(int signo)
      */
     switch (signo) {
 	case SIGQUIT:
+	    command = NGX_CMD_QUIT;
+	    break;
+
 	case SIGTERM:
+	    command = NGX_CMD_TERMINATE;
+	    break;
+
 	case SIGUSR1:
 	    command = 1;
 	    break;
@@ -107,6 +145,7 @@ ngx_signal_worker_processes(int signo)
 
 	/* ipc socket*/
 	if (command) {
+	    snprintf(c, 10, "%d", command);
 	    write(ngx_processes[i].ipcfd, c, sizeof(c));
 	    continue;
 	}

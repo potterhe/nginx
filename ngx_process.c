@@ -3,11 +3,25 @@
 #include <netinet/in.h>
 #include "ngx_process.h"
 
+typedef struct {
+    int signo;
+    char *name;
+    void (*handler) (int signo);
+} ngx_signal_t;
+
 ngx_process_t    ngx_processes[NGX_MAX_PROCESSES];
-int worker_ipcfd;
+int worker_ipcfd; //worker process use only
+
 extern ngx_reconfigure;
+extern ngx_terminate;
 
 void ngx_signal_handler(int signo);
+
+ngx_signal_t signals[] = {
+    {SIGTERM, "stop", ngx_signal_handler},
+    {SIGHUP, "reload", ngx_signal_handler},
+    {0, NULL, NULL}
+};
 
 void
 ngx_init_processes_array()
@@ -22,26 +36,41 @@ ngx_init_processes_array()
 int
 ngx_init_signals()
 {
-    int signo = SIGHUP;
+    ngx_signal_t *s;
     struct sigaction sa;
 
-    sa.sa_handler = ngx_signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
+    for (s = signals; s->signo != 0; s++) {
+        sa.sa_handler = s->handler;
+        sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
 
-    if (sigaction(signo, &sa, NULL) == -1)
-	return SIG_ERR;
-
+	if (sigaction(s->signo, &sa, NULL) == -1)
+	    return SIG_ERR;
+    }
     return 0;
 }
 
 void
 ngx_signal_handler(int signo)
 {
+    ngx_signal_t *s;
+
+    for (s = signals; s->signo != 0; s++) {
+	if (s->signo == signo) {
+	    break;
+	}
+    }
+    printf("signal:%d\n", s->signo);
+
     switch (signo) {
     case SIGHUP:
 	ngx_reconfigure = 1;
 	break;
+
+    case SIGTERM:
+	ngx_terminate = 1;
+	break;
+
     }
 }
 

@@ -1,10 +1,14 @@
-#define NGX_PID_FILENAME "nginx.pid"
+#include "ngx_config.h"
+
 static char *ngx_signal;
 
 int
 main(int argc, char *argv[])
 {
     ngx_get_options(argc, argv);
+    if (ngx_signal) {
+	return ngx_signal_process(ngx_signal);
+    }
 
     ngx_init_signals();
 

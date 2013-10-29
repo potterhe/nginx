@@ -10,6 +10,6 @@ ngx_process_events_and_timers()
 
     /*worker process will be blocked here, waiting for master's signal from ipc socket*/
     if (read(worker_ipcfd, b, 1024) > 0) {
-	printf("worker %d said: %s\n", getpid(), b);
+	printf("worker process %d revieve msg: %s\n", getpid(), b);
     }
 }
