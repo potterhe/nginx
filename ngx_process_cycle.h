@@ -4,4 +4,7 @@
 #define NGX_CMD_QUIT	    3
 #define NGX_CMD_TERMINATE   4
 
+#define NGX_PROCESS_MASTER     1
+#define NGX_PROCESS_WORKER     3
+
 #endif
