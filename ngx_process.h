@@ -7,6 +7,7 @@ typedef void (*ngx_spawn_proc_pt) ();
 typedef struct {
     pid_t   pid;
     int	    ipcfd;
+    unsigned int exited;//进程已经由waitpid回收
 } ngx_process_t;
 
 #endif

@@ -24,9 +24,9 @@ ngx_create_pidfile(const char *name)
 }
 
 void
-ngx_delete_pidfile(const char *name)
+ngx_delete_pidfile()
 {
-    unlink(name);
+    unlink(NGX_PID_FILENAME);
 }
 
 int 

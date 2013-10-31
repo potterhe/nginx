@@ -111,7 +111,7 @@ ngx_process_get_status()
 	for (i = 0; i < NGX_MAX_PROCESSES; i++) {
 	    if (ngx_processes[i].pid == pid) {
 		//ngx_processes[i].status = status;
-                //ngx_processes[i].exited = 1;
+                ngx_processes[i].exited = 1;
 		break;
 	    }
 	}
