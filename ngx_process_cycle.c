@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <signal.h>
+#include <sys/time.h>
 #include "ngx_process.h"
 #include "ngx_process_cycle.h"
 
@@ -10,6 +11,7 @@
 unsigned int ngx_process;
 
 int ngx_reap;//回收子进程
+int ngx_sigalrm;//master监控worker进程退出的闹钟标记
 int ngx_reconfigure;//nginx -s reload
 int ngx_terminate;//nginx -s stop
 int ngx_quit;
@@ -27,12 +29,16 @@ void
 ngx_master_process_cycle()
 {
     sigset_t set;
-    unsigned int live; // living worker process
+    unsigned int live; //living worker process
+    int delay;//单位:毫秒.在通过ipc socket给worker退出command后,master已经等待的时间
+    struct itimerval itv;//跟踪worker进程退出的定时器
+
     /*
      * block a lot signals
      */
     sigemptyset(&set);
     sigaddset(&set, SIGCHLD);
+    sigaddset(&set, SIGALRM);
     sigaddset(&set, SIGHUP); 
     sigaddset(&set, SIGTERM);
 
@@ -48,12 +54,32 @@ ngx_master_process_cycle()
 
     ngx_start_worker_processes(2);
 
+    delay = 0;
     live = 1;//有worker 进程处于存活状态
 
     /*
      * watch worker process
      */
     for ( ; ; ) {
+
+	if (delay) {
+	    /* 判定是否有定时器触发 */
+	    if (ngx_sigalrm) {
+		delay *= 2;//每次定时器信号后，翻倍定时器时延
+		ngx_sigalrm = 0;
+	    }
+
+	    /* 安装定时器,不使用'重复'机制
+	     *
+	     */
+	    itv.it_interval.tv_sec = 0;
+	    itv.it_interval.tv_usec = 0;
+
+	    itv.it_value.tv_sec = delay / 1000;//秒
+	    itv.it_value.tv_usec = (delay % 1000) * 1000;//单位:微秒
+
+	    setitimer(ITIMER_REAL, &itv, NULL);
+	}
     
 	/* 
 	 * master process will be blocked here,
@@ -88,7 +114,15 @@ ngx_master_process_cycle()
 	 * if worker process did not quit in 1000 ms, master send SIGKILL signal.
 	 */
 	if (ngx_terminate) {
-	    ngx_signal_worker_processes(SIGTERM);
+	    if(delay == 0) {
+		delay = 50;
+	    }
+
+	    if (delay > 1000) {
+		ngx_signal_worker_processes(SIGKILL);
+	    } else { 
+		ngx_signal_worker_processes(SIGTERM);
+	    }
 	    continue;
 	}
 

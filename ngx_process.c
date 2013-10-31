@@ -16,6 +16,7 @@ int worker_ipcfd; //worker process use only
 extern int ngx_reconfigure;
 extern int ngx_terminate;
 extern int ngx_reap;
+extern int ngx_sigalrm;
 
 static void ngx_process_get_status();
 void ngx_signal_handler(int signo);
@@ -24,6 +25,7 @@ ngx_signal_t signals[] = {
     {SIGTERM, "stop", ngx_signal_handler},
     {SIGHUP, "reload", ngx_signal_handler},
     {SIGCHLD, "", ngx_signal_handler},
+    {SIGALRM, "", ngx_signal_handler},
     {0, NULL, NULL}
 };
 
@@ -67,6 +69,10 @@ ngx_signal_handler(int signo)
     printf("signal:%d\n", s->signo);
 
     switch (signo) {
+
+	case SIGALRM:
+	    ngx_sigalrm = 1;
+	    break;
 	
 	case SIGCHLD:
 	    ngx_reap = 1;
