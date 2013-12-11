@@ -7,4 +7,6 @@
 #define NGX_PROCESS_MASTER     1
 #define NGX_PROCESS_WORKER     3
 
+void ngx_master_process_cycle();
+
 #endif

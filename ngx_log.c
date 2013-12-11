@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>//for malloc()
+#include <stdio.h>
 #include "ngx_config.h"
 #include "ngx_log.h"
 
@@ -29,7 +30,7 @@ void
 ngx_log_stderr(const char *fmt, ...)
 {
     char *p, *buf, *last, errstr[NGX_MAX_ERROR_STR];
-    int d;
+    int d, i;
     /* [K & R] 1978 B7
      * va_list args 将依次指向每个实际参数 
      */
@@ -72,6 +73,13 @@ ngx_log_stderr(const char *fmt, ...)
 		    *buf++ = (char) (d & 0xff);
 		    fmt++;
 
+		    continue;
+
+		case 'd':
+		    d = va_arg(args, int);
+		    i = snprintf(buf, last - buf, "%d", d);
+		    buf += i;
+		    fmt++;
 		    continue;
 
 		default:

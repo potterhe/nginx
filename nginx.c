@@ -3,6 +3,8 @@
 #include "ngx_cycle.h"
 #include "ngx_log.h"
 #include "ngx_process.h"
+#include "ngx_process_cycle.h"
+#include "ngx_os.h"
 
 static int ngx_get_options(int argc, const char *argv[]);
 
