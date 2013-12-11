@@ -1,11 +1,17 @@
+#include <string.h>//for strcmp()
 #include "ngx_config.h"
+#include "ngx_cycle.h"
+#include "ngx_log.h"
+#include "ngx_process.h"
+
+static int ngx_get_options(int argc, const char *argv[]);
 
 //下面的变量在解析命令行选项流程中赋值
 static char *ngx_prefix; //存储命令行 -p 参数
 static char *ngx_signal; //存储命令行 -s 参数
 
 int
-main(int argc, char *argv[])
+main(int argc, const char *argv[])
 {
     ngx_get_options(argc, argv);
     if (ngx_signal) {
@@ -24,7 +30,8 @@ main(int argc, char *argv[])
     return 0;
 } 
 
-int ngx_get_options(int argc, const char *argv[])
+static int
+ngx_get_options(int argc, const char *argv[])
 {
     int i;
     char *p;

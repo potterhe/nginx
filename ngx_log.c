@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdlib.h>//for malloc()
 #include "ngx_config.h"
 #include "ngx_log.h"
 
@@ -68,7 +69,7 @@ ngx_log_stderr(const char *fmt, ...)
 
 		case 'c':
 		    d = va_arg(args, int);
-		    *buf++ = (u_char) (d & 0xff);
+		    *buf++ = (char) (d & 0xff);
 		    fmt++;
 
 		    continue;
@@ -95,7 +96,8 @@ ngx_log_stderr(const char *fmt, ...)
     write(STDERR_FILENO, errstr, buf - errstr);
 }
 
-void ngx_log_init(char *prefix)
+void *
+ngx_log_init(char *prefix)
 {
     char *p, *name;
     size_t plen, nlen;
@@ -144,5 +146,5 @@ void ngx_log_init(char *prefix)
 	free(name);
     }
 
-    return ngx_log_fd;
+    return &ngx_log_fd;
 }

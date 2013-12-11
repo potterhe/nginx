@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <sys/wait.h>
 #include "ngx_process.h"
+#include "ngx_log.h"
 
 typedef struct {
     int signo;
@@ -67,7 +68,7 @@ ngx_signal_handler(int signo)
 	    break;
 	}
     }
-    printf("signal:%d\n", s->signo);
+    //printf("signal:%d\n", s->signo);
 
     switch (signo) {
 

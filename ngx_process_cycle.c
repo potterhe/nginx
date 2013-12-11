@@ -1,8 +1,12 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/time.h>
+#include <stdlib.h>
 #include "ngx_process.h"
 #include "ngx_process_cycle.h"
+#include "ngx_log.h"
+#include "ngx_cycle.h"
+#include "ngx_event.h"
 
 /**
  * 标识当前进程的角色，master, worker, ...
@@ -20,6 +24,7 @@ int ngx_daemonized;//守护进程化标识
 
 extern ngx_process_t ngx_processes[NGX_MAX_PROCESSES];
 
+static void ngx_start_worker_processes(int);
 static void ngx_worker_process_cycle();
 static void ngx_worker_process_init();
 static int ngx_worker_process_exit();
@@ -144,7 +149,7 @@ ngx_master_process_cycle()
     }
 }
 
-void
+static void
 ngx_start_worker_processes(int n)
 {
     int i;
@@ -261,9 +266,9 @@ ngx_signal_worker_processes(int signo)
 
 	/* ipc socket*/
 	if (command) {
-	    len = snprintf(c, 10, "%d", command);
-	    printf("write command: len = %d\n", len);
-	    write(ngx_processes[i].ipcfd, c, len);
+	    //len = snprintf(c, 10, "%d", command);
+	    //printf("write command: len = %d\n", len);
+	    write(ngx_processes[i].ipcfd, &command, sizeof(int));
 	    continue;
 	}
 

@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>//for kill()
+#include <string.h>//for strcmp()
 #include "ngx_config.h"
-
-/* 64位整数的10进制表示的字符串的长度，主要用于为这样的值分配合适的缓冲区 */
-#define NGX_INT64_LEN   sizeof("-9223372036854775808") - 1
+#include "ngx_log.h"
 
 void
 ngx_create_pidfile(const char *name)

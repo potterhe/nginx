@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>//for atoi()
 #include "ngx_process_cycle.h"
 
 extern int worker_ipcfd;
@@ -15,7 +16,7 @@ ngx_process_events_and_timers()
 
     /*worker process will be blocked here, waiting for master's signal from ipc socket*/
     if ((n = read(worker_ipcfd, b, 1024)) > 0) {
-	printf("worker process %d revieve msg: %s, len %d\n", getpid(), b, n);
+	//printf("worker process %d revieve msg: %s, len %d\n", getpid(), b, n);
 
 	b[n] = '\0';
 	command = atoi(b);

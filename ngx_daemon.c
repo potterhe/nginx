@@ -1,5 +1,7 @@
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <sys/stat.h>//for umask()
 
 int
 ngx_daemon()
