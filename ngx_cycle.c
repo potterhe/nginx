@@ -26,7 +26,7 @@ ngx_create_pidfile(const char *name)
 void
 ngx_delete_pidfile()
 {
-    unlink(NGX_PID_FILENAME);
+    unlink(NGX_PID_PATH);
 }
 
 int 
@@ -37,7 +37,7 @@ ngx_signal_process(const char *sig)
     char buf[NGX_INT64_LEN + 2];
 
     /* get pid from pidfile */
-    if ((fd = open(NGX_PID_FILENAME, O_RDONLY)) == -1) {
+    if ((fd = open(NGX_PID_PATH, O_RDONLY)) == -1) {
 	ngx_log_stderr("open pidfile failed");
 	return -1;
     }
@@ -48,7 +48,7 @@ ngx_signal_process(const char *sig)
     }
     
     close(fd);
-    ngx_log_stderr("pid file content %s \n", buf);
+    ngx_log_error("pid file content %s \n", buf);
 
     pid = atoi(buf);
     if (pid == -1) {

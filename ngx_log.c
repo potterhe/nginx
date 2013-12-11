@@ -1,7 +1,28 @@
 #include <stdarg.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include "ngx_config.h"
+#include "ngx_log.h"
 
-#define NGX_MAX_ERROR_STR 2048
+static int ngx_log_fd;
+
+void
+ngx_log_error(const char *fmt, ...)
+{
+    char errstr[NGX_MAX_ERROR_STR];
+    ssize_t n;
+    va_list args;
+
+    /**
+     * TODO 解析可变参数列表
+     * 这里只是简单地把fmt写入日志
+     */
+    n = strlen(fmt);
+    memcpy(errstr, fmt, n);
+
+    write(ngx_log_fd, errstr, n);
+}
 
 void
 ngx_log_stderr(const char *fmt, ...)
@@ -37,6 +58,7 @@ ngx_log_stderr(const char *fmt, ...)
 		case 's':
 		    p = va_arg(args, char *);
 		    while (*p && buf < last) {
+			//*buf++ = *p++;
 			*buf = *p;
 			buf++;
 			p++;
@@ -52,6 +74,7 @@ ngx_log_stderr(const char *fmt, ...)
 		    continue;
 
 		default:
+		    //*buf++ = *fmt++;
 		    *buf = *fmt;
 		    buf++;
 		    fmt++;
@@ -60,6 +83,7 @@ ngx_log_stderr(const char *fmt, ...)
 	    }
 	
 	} else {
+	    //*buf++ = *fmt++;
 	    *buf = *fmt;
 	    buf++;
 	    fmt++;
@@ -69,4 +93,56 @@ ngx_log_stderr(const char *fmt, ...)
     va_end(args);
 
     write(STDERR_FILENO, errstr, buf - errstr);
+}
+
+void ngx_log_init(char *prefix)
+{
+    char *p, *name;
+    size_t plen, nlen;
+
+    name = NGX_ERROR_LOG_PATH;
+    nlen = strlen(name);
+
+    p = NULL;
+
+    /* 如果日志名不是绝对路径，需要加上路径前缀，组装成绝对路径 */
+    if (name[0] != '/') {
+	if (prefix) {
+	    plen = strlen(prefix);
+	    
+	} else {
+	    prefix = NGX_PREFIX;
+	    plen = strlen(prefix);
+	
+	}
+
+	if (plen) {
+	    name = malloc(plen + nlen + 2);// +2 是为了连接的'/'和末尾的\0
+	    if (name == NULL) {
+		return NULL;
+	    }
+
+	    memcpy(name, prefix, plen);
+	    p = name + plen;
+
+	    //判定前缀路径的最后是否有路径分隔符
+	    if ((*(p - 1)) != '/') {
+		*p++ = '/';
+	    }
+
+	    memcpy(p, NGX_ERROR_LOG_PATH, nlen + 1);// +1会把NGX_ERROR_LOG_PATH末尾的\0复制过来
+	}
+    }
+
+    ngx_log_fd = open(name, O_CREAT|O_WRONLY|O_APPEND, 0644);
+    if (ngx_log_fd == -1) {
+	ngx_log_stderr("count not open error log file \"%s\"", name);
+	ngx_log_fd = STDERR_FILENO;
+    }
+
+    if (p) {
+	free(name);
+    }
+
+    return ngx_log_fd;
 }

@@ -1,6 +1,8 @@
 #include "ngx_config.h"
 
-static char *ngx_signal;
+//下面的变量在解析命令行选项流程中赋值
+static char *ngx_prefix; //存储命令行 -p 参数
+static char *ngx_signal; //存储命令行 -s 参数
 
 int
 main(int argc, char *argv[])
@@ -9,10 +11,14 @@ main(int argc, char *argv[])
     if (ngx_signal) {
 	return ngx_signal_process(ngx_signal);
     }
+    //初始化日志
+    ngx_log_init(ngx_prefix);
 
     ngx_init_signals();
+    //daemonized
+    ngx_daemon();
 
-    ngx_create_pidfile(NGX_PID_FILENAME);
+    ngx_create_pidfile(NGX_PID_PATH);
     ngx_master_process_cycle();
 
     return 0;

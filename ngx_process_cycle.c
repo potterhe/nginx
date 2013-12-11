@@ -16,6 +16,8 @@ int ngx_reconfigure;//nginx -s reload
 int ngx_terminate;//nginx -s stop
 int ngx_quit;
 
+int ngx_daemonized;//守护进程化标识
+
 extern ngx_process_t ngx_processes[NGX_MAX_PROCESSES];
 
 static void ngx_worker_process_cycle();

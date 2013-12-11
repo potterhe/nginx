@@ -6,7 +6,7 @@
 
 typedef struct {
     int signo;
-    char *name;
+    char *name; //对应命令行参数-s语义,不适用-s的为空串
     void (*handler) (int signo);
 } ngx_signal_t;
 
@@ -51,6 +51,7 @@ ngx_init_signals()
 	sa.sa_flags = 0;
 
 	if (sigaction(s->signo, &sa, NULL) == -1)
+	    ngx_log_error("sigaction(%d) failed", s->signo);
 	    return SIG_ERR;
     }
     return 0;
