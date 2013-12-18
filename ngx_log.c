@@ -6,38 +6,52 @@
 #include <stdio.h>
 #include "ngx_config.h"
 #include "ngx_log.h"
+#include "ngx_string.h"
 
 static int ngx_log_fd;
 
 void
 ngx_log_error(const char *fmt, ...)
 {
-    char errstr[NGX_MAX_ERROR_STR];
-    ssize_t n;
+    char *p, *last, errstr[NGX_MAX_ERROR_STR];
     va_list args;
 
     /**
-     * TODO 解析可变参数列表
-     * 这里只是简单地把fmt写入日志
+     * 解析可变参数列表
      */
-    n = strlen(fmt);
-    memcpy(errstr, fmt, n);
+ 
+    last = errstr + NGX_MAX_ERROR_STR;
+    p = errstr;
 
-    write(ngx_log_fd, errstr, n);
+    va_start(args, fmt);
+    p = ngx_vslprintf(p, last, fmt, args);
+    va_end(args);
+
+    /**
+     * 在行末尾添加换行
+     * TODO 平台兼容，如win需要2个字符表示
+     * LF的ascii码10
+     */
+    if (p > last - 1) {
+    	p = last - 1;
+    }
+    *p++ = 10;
+
+    write(ngx_log_fd, errstr, p - errstr);
 }
 
 void
 ngx_log_stderr(const char *fmt, ...)
 {
-    char *p, *buf, *last, errstr[NGX_MAX_ERROR_STR];
-    int d, i;
+    char *p, *last, errstr[NGX_MAX_ERROR_STR];
+
     /* [K & R] 1978 B7
      * va_list args 将依次指向每个实际参数 
      */
     va_list args;
 
     last = errstr + NGX_MAX_ERROR_STR;
-    buf = errstr;
+    p = errstr;
 
     /*
      * 在访问任何未命名的参数前，必须用va_start宏初始化一次
@@ -50,58 +64,19 @@ ngx_log_stderr(const char *fmt, ...)
      * va_end(va_list ap);
      */
     va_start(args, fmt);
-
-    while (*fmt && buf < last) {
-
-	if (*fmt == '%') {
-	    fmt++;
-	    switch (*fmt) {
-
-		case 's':
-		    p = va_arg(args, char *);
-		    while (*p && buf < last) {
-			//*buf++ = *p++;
-			*buf = *p;
-			buf++;
-			p++;
-		    }
-		    fmt++;
-		    continue;
-
-		case 'c':
-		    d = va_arg(args, int);
-		    *buf++ = (char) (d & 0xff);
-		    fmt++;
-
-		    continue;
-
-		case 'd':
-		    d = va_arg(args, int);
-		    i = snprintf(buf, last - buf, "%d", d);
-		    buf += i;
-		    fmt++;
-		    continue;
-
-		default:
-		    //*buf++ = *fmt++;
-		    *buf = *fmt;
-		    buf++;
-		    fmt++;
-		    continue;
-	    
-	    }
-	
-	} else {
-	    //*buf++ = *fmt++;
-	    *buf = *fmt;
-	    buf++;
-	    fmt++;
-	}
-    
-    }
+    p = ngx_vslprintf(p, last, fmt, args);
     va_end(args);
 
-    write(STDERR_FILENO, errstr, buf - errstr);
+    /**
+     * 在行末尾添加换行
+     * TODO 平台兼容，如win需要2个字符表示
+     */
+    if (p > last - 1) {
+    	p = last - 1;
+    }
+    *p++ = 10;
+
+    write(STDERR_FILENO, errstr, p - errstr);
 }
 
 void *

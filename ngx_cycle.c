@@ -20,7 +20,12 @@ ngx_create_pidfile(const char *name)
      *	    nginx 使用自己实现的 ngx_snprintf()进行了处理.
      */
     len = snprintf(pid, NGX_INT64_LEN + 2, "%d", getpid());
-    write(fd, pid, len);
+
+    /**
+     * +1 是为了把缓冲区末尾的\0(snprintf的行为)写入文件,
+     * 在从文件中解析pid时，是使用atoi()来处理的
+     */
+    write(fd, pid, len + 1);
     /* $ od -t a nginx.pid */
     close(fd);
 }
@@ -50,7 +55,7 @@ ngx_signal_process(const char *sig)
     }
     
     close(fd);
-    ngx_log_error("pid file content %s \n", buf);
+    ngx_log_stderr("pid file content %s \n", buf);
 
     pid = atoi(buf);
     if (pid == -1) {
