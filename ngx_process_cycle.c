@@ -50,7 +50,7 @@ ngx_master_process_cycle()
     sigaddset(&set, SIGTERM);
 
     if (sigprocmask(SIG_BLOCK, &set, NULL) == -1) {
-    
+		ngx_log_error("sigprocmask() failed");
     }
     sigemptyset(&set);
 
@@ -85,7 +85,9 @@ ngx_master_process_cycle()
 	    itv.it_value.tv_sec = delay / 1000;//秒
 	    itv.it_value.tv_usec = (delay % 1000) * 1000;//单位:微秒
 
-	    setitimer(ITIMER_REAL, &itv, NULL);
+	    if(setitimer(ITIMER_REAL, &itv, NULL) == -1) {
+			ngx_log_error("setitimer() failed");
+	    }
 	}
     
 	/* 
@@ -228,15 +230,14 @@ ngx_worker_process_init()
 static int
 ngx_worker_process_exit()
 {
-    ngx_log_stderr("worker exit\n");
+    ngx_log_error("worker: exit");
     exit(0);
 }
 
 static void
 ngx_signal_worker_processes(int signo)
 {
-    int i, command, len;
-    char c[10];
+    int i, command;
     /**
      * NGX_SHUTDOWN_SIGNAL QUIT
      * NGX_TERMINATE_SIGNAL TERM, 
@@ -266,8 +267,6 @@ ngx_signal_worker_processes(int signo)
 
 	/* ipc socket*/
 	if (command) {
-	    //len = snprintf(c, 10, "%d", command);
-	    //printf("write command: len = %d\n", len);
 	    write(ngx_processes[i].ipcfd, &command, sizeof(int));
 	    continue;
 	}

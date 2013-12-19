@@ -16,11 +16,13 @@ int
 main(int argc, const char *argv[])
 {
     ngx_get_options(argc, argv);
-    if (ngx_signal) {
-	return ngx_signal_process(ngx_signal);
-    }
+
     //初始化日志
     ngx_log_init(ngx_prefix);
+	
+	if (ngx_signal) {
+		return ngx_signal_process(ngx_signal);
+	}
 
     ngx_init_signals();
     //daemonized

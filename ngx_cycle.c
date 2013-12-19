@@ -55,7 +55,7 @@ ngx_signal_process(const char *sig)
     }
     
     close(fd);
-    ngx_log_stderr("pid file content %s \n", buf);
+    ngx_log_error("pid file content %s", buf);
 
     pid = atoi(buf);
     if (pid == -1) {

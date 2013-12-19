@@ -48,16 +48,16 @@ ngx_init_signals()
     struct sigaction sa;
 
     for (s = signals; s->signo != 0; s++) {
-	//初始化sa内存,如果使用这个，则下面给sa_flags赋值就不必要了
-	memset(&sa, 0, sizeof(struct sigaction));
+		//初始化sa内存,如果使用这个，则下面给sa_flags赋值就不必要了
+		memset(&sa, 0, sizeof(struct sigaction));
         sa.sa_handler = s->handler;
         sigemptyset(&sa.sa_mask);
-	//sa.sa_flags = 0;
+		//sa.sa_flags = 0;
 
-	if (sigaction(s->signo, &sa, NULL) == -1) {
-	    ngx_log_error("sigaction(%d) failed", s->signo);
-	    return SIG_ERR;
-	}
+		if (sigaction(s->signo, &sa, NULL) == -1) {
+			ngx_log_error("sigaction(%d) failed", s->signo);
+			return SIG_ERR;
+		}
     }
     return 0;
 }
@@ -67,10 +67,11 @@ ngx_signal_handler(int signo)
 {
     ngx_signal_t *s;
 
+    ngx_log_error("signo:%d", signo);
     for (s = signals; s->signo != 0; s++) {
-	if (s->signo == signo) {
-	    break;
-	}
+		if (s->signo == signo) {
+			break;
+		}
     }
 
     switch (signo) {
@@ -94,7 +95,7 @@ ngx_signal_handler(int signo)
     }
 
     if (signo == SIGCHLD) {
-	ngx_process_get_status();
+		ngx_process_get_status();
     }
 }
 
@@ -128,6 +129,7 @@ ngx_process_get_status()
 	}
 
 	/* TODO 通过WIF宏分析 status,确定进程退出状态，记录进日志 */
+	ngx_log_error("process exited %d", pid);
     }
 }
 
@@ -181,6 +183,8 @@ ngx_spawn_process(ngx_spawn_proc_pt proc)
 
     ngx_processes[s].pid = pid;
     ngx_processes[s].ipcfd = fd[0];
+
+    ngx_log_error("master: worker process spawn %d", pid);
 
     return pid;
 }
