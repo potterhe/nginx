@@ -245,20 +245,20 @@ ngx_signal_worker_processes(int signo)
      * above signo, IPC socket
      */
     switch (signo) {
-	case SIGQUIT:
-	    command = NGX_CMD_QUIT;
-	    break;
+		case SIGQUIT:
+			command = NGX_CMD_QUIT;
+			break;
 
-	case SIGTERM:
-	    command = NGX_CMD_TERMINATE;
-	    break;
+		case SIGTERM:
+			command = NGX_CMD_TERMINATE;
+			break;
 
-	case SIGUSR1:
-	    command = 1;
-	    break;
+		case SIGUSR1:
+			command = 1;
+			break;
 
-	default:
-	    command = 0;
+		default:
+			command = 0;
     }
 
     for (i = 0; i < NGX_MAX_PROCESSES; i++) {
@@ -308,6 +308,7 @@ ngx_master_process_exit()
 {
     ngx_delete_pidfile();
 
+    ngx_log_error("master: exit");
     /* 调用所有模块的 exit_master()
      * ngx_modules[i]->exit_master();
      * ngx_close_listening_sockets();
