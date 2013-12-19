@@ -8,6 +8,7 @@
 #include "ngx_conf_file.h"
 
 extern unsigned int ngx_process;
+extern ngx_cycle_t *ngx_cycle;
 
 static int ngx_get_options(int argc, const char *argv[]);
 
@@ -18,12 +19,18 @@ static char *ngx_signal; //存储命令行 -s 参数
 int
 main(int argc, const char *argv[])
 {
+	ngx_cycle_t *cycle, init_cycle;
 	ngx_core_conf_t *ccf;
 
     ngx_get_options(argc, argv);
 
     //初始化日志
     ngx_log_init(ngx_prefix);
+
+	//初始化配置结构
+	memset(&init_cycle, 0, sizeof(ngx_cycle_t));
+	cycle = ngx_init_cycle(&init_cycle);
+	ngx_cycle = cycle;
 	
 	if (ngx_signal) {
 		return ngx_signal_process(ngx_signal);
@@ -45,7 +52,7 @@ main(int argc, const char *argv[])
     ngx_create_pidfile(NGX_PID_PATH);
 
 	if (ngx_process == NGX_PROCESS_SINGLE) {
-		ngx_single_process_cycle();
+		ngx_single_process_cycle(cycle);
 	
 	} else {
 		ngx_master_process_cycle();

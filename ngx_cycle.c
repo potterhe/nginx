@@ -6,6 +6,32 @@
 #include <string.h>//for strcmp()
 #include "ngx_config.h"
 #include "ngx_log.h"
+#include "ngx_cycle.h"
+
+ngx_cycle_t *ngx_cycle;
+
+ngx_cycle_t *
+ngx_init_cycle(ngx_cycle_t *old_cycle)
+{
+	ngx_cycle_t *cycle;
+
+	cycle = old_cycle;
+
+	/**
+	 * TODO 
+	 * ngx_modules[i]->init_conf()
+	 */
+	ngx_event_init_conf(cycle);
+
+	/**
+	 * TODO
+	 * ngx_modules[i]->init_module()
+	 * 调用nginx各模块的init_module()方法
+	 * 其中事件模块是ngx_event_module_init()
+	 */
+	ngx_event_module_init(cycle);
+	return cycle;
+}
 
 void
 ngx_create_pidfile(const char *name)

@@ -152,13 +152,14 @@ ngx_master_process_cycle()
 }
 
 void
-ngx_single_process_cycle()
+ngx_single_process_cycle(ngx_cycle_t *cycle)
 {
 	/**
 	 * TODO
 	 * ngx_set_environment()
 	 * ngx_modules[i]->init_process()
 	 */
+	ngx_event_process_init(cycle);
 
 	for ( ; ; ) {
 		ngx_log_error("single cycle");
