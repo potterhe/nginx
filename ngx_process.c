@@ -13,7 +13,7 @@ typedef struct {
 } ngx_signal_t;
 
 ngx_process_t    ngx_processes[NGX_MAX_PROCESSES];
-int worker_ipcfd; //worker process use only
+int worker_ipcfd; //init by fork(), worker process use only
 
 extern int ngx_reconfigure;
 extern int ngx_terminate;

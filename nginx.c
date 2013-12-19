@@ -5,6 +5,9 @@
 #include "ngx_process.h"
 #include "ngx_process_cycle.h"
 #include "ngx_os.h"
+#include "ngx_conf_file.h"
+
+extern unsigned int ngx_process;
 
 static int ngx_get_options(int argc, const char *argv[]);
 
@@ -15,6 +18,8 @@ static char *ngx_signal; //存储命令行 -s 参数
 int
 main(int argc, const char *argv[])
 {
+	ngx_core_conf_t *ccf;
+
     ngx_get_options(argc, argv);
 
     //初始化日志
@@ -24,12 +29,27 @@ main(int argc, const char *argv[])
 		return ngx_signal_process(ngx_signal);
 	}
 
+	//获取配置信息，这里是一个伪实现
+	ccf = ngx_get_conf();
+	//根据配置文件，确定使用何种进程模式，默认是单进程模式
+	if (ccf->master && ngx_process == NGX_PROCESS_SINGLE) {
+		ngx_process = NGX_PROCESS_MASTER;
+	}
+
     ngx_init_signals();
     //daemonized
-    ngx_daemon();
+	if (ccf->daemon) {
+		ngx_daemon();
+	}
 
     ngx_create_pidfile(NGX_PID_PATH);
-    ngx_master_process_cycle();
+
+	if (ngx_process == NGX_PROCESS_SINGLE) {
+		ngx_single_process_cycle();
+	
+	} else {
+		ngx_master_process_cycle();
+	}
 
     return 0;
 } 

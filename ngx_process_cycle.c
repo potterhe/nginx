@@ -151,6 +151,25 @@ ngx_master_process_cycle()
     }
 }
 
+void
+ngx_single_process_cycle()
+{
+	/**
+	 * TODO
+	 * ngx_set_environment()
+	 * ngx_modules[i]->init_process()
+	 */
+
+	for ( ; ; ) {
+		ngx_log_error("single cycle");
+		ngx_process_events_and_timers();
+
+		if (ngx_terminate) {
+			ngx_master_process_exit();
+		}
+	}
+}
+
 static void
 ngx_start_worker_processes(int n)
 {
