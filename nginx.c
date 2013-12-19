@@ -47,43 +47,43 @@ ngx_get_options(int argc, const char *argv[])
      */
     for (i = 1; i < argc; i++) {
 
-	/* p point "[-]s" */
-	p = argv[i];
-	if (*p != '-') {
-	    ngx_log_stderr("invalid option: \"%s\"", argv[i]);
-	    return -1;
-	}
-	/* p point "-[s]" */
-	p++;
-	while (*p) {
-	    switch (*p++) {
-
-		case 's':
-		    if (*p) {
-			/* support "nginx -sstop" */
-			ngx_signal = p;
-		    } else if (argv[++i]) {
-			/* nginx -s stop*/
-			ngx_signal = argv[i];
-		    } else {
-			ngx_log_stderr("option \"-s\" requires parameter");
+		/* p point "[-]s" */
+		p = argv[i];
+		if (*p != '-') {
+			ngx_log_stderr("invalid option: \"%s\"", argv[i]);
 			return -1;
-		    }
+		}
+		/* p point "-[s]" */
+		p++;
+		while (*p) {
+			switch (*p++) {
 
-		    /* validate ngx_signal value */
-		    if (strcmp(ngx_signal, "stop") == 0) {
-			goto next;
-		    }
-		    ngx_log_stderr("invalid option: \"-s %s\"", ngx_signal);
-		    return -1;
+			case 's':
+				if (*p) {
+					/* support "nginx -sstop" */
+					ngx_signal = p;
+				} else if (argv[++i]) {
+					/* nginx -s stop*/
+					ngx_signal = argv[i];
+				} else {
+					ngx_log_stderr("option \"-s\" requires parameter");
+					return -1;
+				}
 
-		default:
-		    ngx_log_stderr("invalid option: \"%c\"", *(p - 1));
-		    return -1;
-		    
-	    }
-	
-	}
+				/* validate ngx_signal value */
+				if (strcmp(ngx_signal, "stop") == 0) {
+					goto next;
+				}
+				ngx_log_stderr("invalid option: \"-s %s\"", ngx_signal);
+				return -1;
+
+			default:
+				ngx_log_stderr("invalid option: \"%c\"", *(p - 1));
+				return -1;
+				
+			}
+		
+		}
 next:
 	continue;
     }

@@ -16,50 +16,50 @@ ngx_vslprintf(char *buf, char *last, const char *fmt, va_list args)
 
     while (*fmt && buf < last) {
 
-	if (*fmt == '%') {
-	    fmt++;
-	    switch (*fmt) {
+		if (*fmt == '%') {
+			fmt++;
+			switch (*fmt) {
 
-		case 's':
-		    p = va_arg(args, char *);
-		    while (*p && buf < last) {
-			//*buf++ = *p++;
-			*buf = *p;
+			case 's':
+				p = va_arg(args, char *);
+				while (*p && buf < last) {
+				//*buf++ = *p++;
+				*buf = *p;
+				buf++;
+				p++;
+				}
+				fmt++;
+				continue;
+
+			case 'c':
+				d = va_arg(args, int);
+				*buf++ = (char) (d & 0xff);
+				fmt++;
+
+				continue;
+
+			case 'd':
+				d = va_arg(args, int);
+				i = snprintf(buf, last - buf, "%d", d);
+				buf += i;
+				fmt++;
+				continue;
+
+			default:
+				//*buf++ = *fmt++;
+				*buf = *fmt;
+				buf++;
+				fmt++;
+				continue;
+			
+			}
+		
+		} else {
+			//*buf++ = *fmt++;
+			*buf = *fmt;
 			buf++;
-			p++;
-		    }
-		    fmt++;
-		    continue;
-
-		case 'c':
-		    d = va_arg(args, int);
-		    *buf++ = (char) (d & 0xff);
-		    fmt++;
-
-		    continue;
-
-		case 'd':
-		    d = va_arg(args, int);
-		    i = snprintf(buf, last - buf, "%d", d);
-		    buf += i;
-		    fmt++;
-		    continue;
-
-		default:
-		    //*buf++ = *fmt++;
-		    *buf = *fmt;
-		    buf++;
-		    fmt++;
-		    continue;
-	    
-	    }
-	
-	} else {
-	    //*buf++ = *fmt++;
-	    *buf = *fmt;
-	    buf++;
-	    fmt++;
-	}
+			fmt++;
+		}
     
     }
 

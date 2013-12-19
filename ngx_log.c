@@ -92,41 +92,41 @@ ngx_log_init(char *prefix)
 
     /* 如果日志名不是绝对路径，需要加上路径前缀，组装成绝对路径 */
     if (name[0] != '/') {
-	if (prefix) {
-	    plen = strlen(prefix);
-	    
-	} else {
-	    prefix = NGX_PREFIX;
-	    plen = strlen(prefix);
-	
-	}
+		if (prefix) {
+			plen = strlen(prefix);
+			
+		} else {
+			prefix = NGX_PREFIX;
+			plen = strlen(prefix);
+		
+		}
 
-	if (plen) {
-	    name = malloc(plen + nlen + 2);// +2 是为了连接的'/'和末尾的\0
-	    if (name == NULL) {
-		return NULL;
-	    }
+		if (plen) {
+			name = malloc(plen + nlen + 2);// +2 是为了连接的'/'和末尾的\0
+			if (name == NULL) {
+				return NULL;
+			}
 
-	    memcpy(name, prefix, plen);
-	    p = name + plen;
+			memcpy(name, prefix, plen);
+			p = name + plen;
 
-	    //判定前缀路径的最后是否有路径分隔符
-	    if ((*(p - 1)) != '/') {
-		*p++ = '/';
-	    }
+			//判定前缀路径的最后是否有路径分隔符
+			if ((*(p - 1)) != '/') {
+				*p++ = '/';
+			}
 
-	    memcpy(p, NGX_ERROR_LOG_PATH, nlen + 1);// +1会把NGX_ERROR_LOG_PATH末尾的\0复制过来
-	}
+			memcpy(p, NGX_ERROR_LOG_PATH, nlen + 1);// +1会把NGX_ERROR_LOG_PATH末尾的\0复制过来
+		}
     }
 
     ngx_log_fd = open(name, O_CREAT|O_WRONLY|O_APPEND, 0644);
     if (ngx_log_fd == -1) {
-	ngx_log_stderr("count not open error log file \"%s\"", name);
-	ngx_log_fd = STDERR_FILENO;
+		ngx_log_stderr("count not open error log file \"%s\"", name);
+		ngx_log_fd = STDERR_FILENO;
     }
 
     if (p) {
-	free(name);
+		free(name);
     }
 
     return &ngx_log_fd;

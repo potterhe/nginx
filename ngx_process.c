@@ -36,8 +36,8 @@ ngx_init_processes_array()
 {
     int i;
     for (i = 0; i < NGX_MAX_PROCESSES; i++) {
-	ngx_processes[i].pid = -1;
-	ngx_processes[i].ipcfd = -1;
+		ngx_processes[i].pid = -1;
+		ngx_processes[i].ipcfd = -1;
     }
 }
 
@@ -106,30 +106,34 @@ ngx_process_get_status()
     pid_t pid;
 
     for ( ; ; ) {
-	pid = waitpid(-1, &status, WNOHANG);
+		/**
+		 * -1 等待任一子进程
+		 * WNOHANG 不阻塞
+		 */
+		pid = waitpid(-1, &status, WNOHANG);
 
-	if (pid == 0) {
-	    return;
-	}
+		if (pid == 0) {
+			return;
+		}
 
-	if (pid == -1) {
-	    /* TODO 错误处理，日志 */
-	    return;
-	}
+		if (pid == -1) {
+			/* TODO 错误处理，日志 */
+			return;
+		}
 
-	/* 标记全局数组 ngx_processes 该进程的退出状态
-	 * 具体清理的细节在 ngx_reap_children() 中实现
-	 */
-	for (i = 0; i < NGX_MAX_PROCESSES; i++) {
-	    if (ngx_processes[i].pid == pid) {
-		//ngx_processes[i].status = status;
-                ngx_processes[i].exited = 1;
-		break;
-	    }
-	}
+		/* 标记全局数组 ngx_processes 该进程的退出状态
+		 * 具体清理的细节在 ngx_reap_children() 中实现
+		 */
+		for (i = 0; i < NGX_MAX_PROCESSES; i++) {
+			if (ngx_processes[i].pid == pid) {
+				//ngx_processes[i].status = status;
+				ngx_processes[i].exited = 1;
+				break;
+			}
+		}
 
-	/* TODO 通过WIF宏分析 status,确定进程退出状态，记录进日志 */
-	ngx_log_error("process exited %d", pid);
+		/* TODO 通过WIF宏分析 status,确定进程退出状态，记录进日志 */
+		ngx_log_error("waitpid: process exited %d", pid);
     }
 }
 
@@ -140,15 +144,15 @@ ngx_spawn_process(ngx_spawn_proc_pt proc)
     int fd[2], s;
 
     for (s = 0; s < NGX_MAX_PROCESSES; s++) {
-	if (ngx_processes[s].pid == -1)
-	    break;
+		if (ngx_processes[s].pid == -1)
+			break;
     }
 
     /*
      * IPC socket
      */
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd) == -1) {
-	return -1;
+		return -1;
     }
     /*TODO 
      * nonblocking
@@ -184,7 +188,7 @@ ngx_spawn_process(ngx_spawn_proc_pt proc)
     ngx_processes[s].pid = pid;
     ngx_processes[s].ipcfd = fd[0];
 
-    ngx_log_error("master: worker process spawn %d", pid);
+    ngx_log_error("master: spawn worker process %d", pid);
 
     return pid;
 }
