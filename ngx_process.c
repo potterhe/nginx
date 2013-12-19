@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/wait.h>
+#include <string.h>
 #include "ngx_process.h"
 #include "ngx_log.h"
 
@@ -47,13 +48,16 @@ ngx_init_signals()
     struct sigaction sa;
 
     for (s = signals; s->signo != 0; s++) {
+	//初始化sa内存,如果使用这个，则下面给sa_flags赋值就不必要了
+	memset(&sa, 0, sizeof(struct sigaction));
         sa.sa_handler = s->handler;
         sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
+	//sa.sa_flags = 0;
 
-	if (sigaction(s->signo, &sa, NULL) == -1)
+	if (sigaction(s->signo, &sa, NULL) == -1) {
 	    ngx_log_error("sigaction(%d) failed", s->signo);
 	    return SIG_ERR;
+	}
     }
     return 0;
 }
@@ -68,7 +72,6 @@ ngx_signal_handler(int signo)
 	    break;
 	}
     }
-    //printf("signal:%d\n", s->signo);
 
     switch (signo) {
 
