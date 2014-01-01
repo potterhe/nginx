@@ -5,11 +5,14 @@
 #include "ngx_log.h"
 #include "ngx_cycle.h"
 #include "ngx_connection.h"
+#include "ngx_conf_file.h"
 
 extern int worker_ipcfd;
 extern int ngx_quit;
 extern int ngx_terminate;
 extern unsigned int ngx_process;
+
+static void ngx_event_init_conf(ngx_cycle_t *);
 
 void
 ngx_process_events_and_timers()
@@ -39,13 +42,34 @@ ngx_process_events_and_timers()
     }
 }
 
-void
+/**
+ * 解析类似下面的配置段
+ * events {
+ *		worker_connections 1024
+ * }
+ */
+char *
+ngx_events_block(ngx_conf_t *cf)
+{
+	/**
+	 * NGX_EVENT_MODULE
+	 * ngx_event_module_t->create_conf();
+	 */
+
+	/**
+	 * NGX_EVENT_MODULE
+	 * ngx_event_module_t->init_conf();
+	 */
+	ngx_event_init_conf(cf->cycle);
+}
+
+static void
 ngx_event_init_conf(ngx_cycle_t *cycle)
 {
 	/* TODO 解析配置文件，为全局配置赋值
-	 * 这里是一个伪实现，将连接池的大小设置为10
+	 * 这里是一个伪实现，将连接池的大小设置为64
 	 */
-	cycle->connection_n = 10;
+	cycle->connection_n = 64;
 }
 
 int

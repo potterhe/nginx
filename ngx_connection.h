@@ -1,7 +1,22 @@
 #ifndef _NGX_CONNECTION_H_INCLUDED_
 #define _NGX_CONNECTION_H_INCLUDED_
 
+#include <netinet/in.h>
+#include <sys/socket.h>
 #include "ngx_core.h"
+
+typedef struct ngx_listening_s ngx_listening_t;
+
+struct ngx_listening_s {
+	int fd;//监听socket对应的打开的文件描述符
+
+	struct sockaddr *sockaddr;
+	socklen_t		socklen;
+
+	int type;
+
+	int backlog;
+};
 
 struct ngx_connection_s {
 	/**

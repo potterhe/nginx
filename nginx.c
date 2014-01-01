@@ -1,4 +1,5 @@
 #include <string.h>//for strcmp()
+#include <stdlib.h>
 #include "ngx_config.h"
 #include "ngx_cycle.h"
 #include "ngx_log.h"
@@ -37,7 +38,7 @@ main(int argc, const char *argv[])
 	}
 
 	//获取配置信息，这里是一个伪实现
-	ccf = ngx_get_conf();
+	ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->ccf);
 	//根据配置文件，确定使用何种进程模式，默认是单进程模式
 	if (ccf->master && ngx_process == NGX_PROCESS_SINGLE) {
 		ngx_process = NGX_PROCESS_MASTER;
@@ -118,3 +119,28 @@ next:
     return 0;
 }
 
+void *
+ngx_core_module_create_conf(ngx_cycle_t *cycle)
+{
+	ngx_core_conf_t *ccf;
+
+	ccf = malloc(sizeof(ngx_core_conf_t));
+	if (ccf == NULL) {
+		return NULL;
+	}
+
+	ccf->daemon = -1;
+	ccf->master = -1;
+
+	return ccf;
+}
+
+void
+ngx_core_module_init_conf(ngx_cycle_t *cycle)
+{
+	ngx_core_conf_t *ccf;
+
+	ccf = (ngx_core_conf_t *) cycle->ccf;
+	ccf->daemon = 1;
+	ccf->master = 0;
+}
