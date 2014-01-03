@@ -48,7 +48,7 @@ ngx_process_events_and_timers()
  *		worker_connections 1024
  * }
  */
-char *
+void
 ngx_events_block(ngx_conf_t *cf)
 {
 	/**
@@ -75,7 +75,7 @@ ngx_event_init_conf(ngx_cycle_t *cycle)
 int
 ngx_event_module_init(ngx_cycle_t *cycle)
 {
-
+	return 0;
 }
 
 int

@@ -10,6 +10,7 @@
 #include "ngx_connection.h"
 #include "ngx_core_module.h"
 #include "ngx_conf_file.h"
+#include "ngx_event.h"
 
 ngx_cycle_t *ngx_cycle;
 
@@ -32,10 +33,9 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 	 * 网络打开的时候是使用的这里存储的值
 	 * 但赋值是在配置文件解析流程中进行的
 	 */
-	n = old_cycle->listening.nelts ? old_cycle->listening.nelts : 10;
-	cycle->listening.elts = malloc(sizeof(ngx_listening_t) * n);
-	memset(cycle->listening.elts, 0, sizeof(ngx_listening_t) * n);
-	cycle->listening.nelts = n;
+	n = NGX_LISTENING_N;
+	cycle->listening = malloc(sizeof(ngx_listening_t) * n);
+	memset(cycle->listening, 0, sizeof(ngx_listening_t) * n);
 
 	/**
 	 * TODO 
@@ -62,6 +62,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 	/**
 	 * TODO 打开监听端口
 	 */
+	ngx_open_listening_sockets(cycle);
 
 	/**
 	 * TODO

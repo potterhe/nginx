@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "ngx_cycle.h"
 #include "ngx_event.h"
+#include "ngx_http.h"
 
 static int ngx_conf_handler(ngx_conf_t *);
 
@@ -57,10 +58,11 @@ ngx_conf_handler(ngx_conf_t *cf)
 	 * }
 	 * ngx_http_block();
 	 * ngx_http_core_server();
-	 *
-	 * "listen 8081"中的listen
+	 * ngx_http_core_listen();
 	 */
-	ngx_http_core_listen(cf);
+	ngx_http_block(cf);
+
+	return 0;
 }
 
 void *

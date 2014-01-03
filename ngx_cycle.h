@@ -2,7 +2,7 @@
 #define _NGX_CYCLE_H_INCLUDED_
 
 #include "ngx_core.h"
-#include "ngx_array.h"
+#include "ngx_connection.h"
 
 struct ngx_cycle_s {
 	/**
@@ -27,10 +27,12 @@ struct ngx_cycle_s {
 	unsigned int free_connection_n;//空闲连接的总数
 
 	/** 
+	 * 源代码使用动态数组(ngx_array_t)存储和组织监听端口数据
+	 * 这里简化实现
 	 * array of the ngx_listening_t
 	 * 存储打开的监听端口配置
 	 */
-	ngx_array_t		listening;
+	ngx_listening_t	*listening;
 
 	unsigned int connection_n;//连接总数
 	ngx_connection_t *connections;

@@ -9,4 +9,7 @@
  */
 #define NGX_INT64_LEN   sizeof("-9223372036854775808") - 1
 
+#define NGX_LISTENING_N 10
+#define NGX_LISTEN_BACKLOG 64
+
 #endif

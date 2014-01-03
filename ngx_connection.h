@@ -8,11 +8,17 @@
 typedef struct ngx_listening_s ngx_listening_t;
 
 struct ngx_listening_s {
-	int fd;//监听socket对应的打开的文件描述符
-
+	/** 
+	 * 监听socket对应的打开的文件描述符
+	 * 结构内存区域分配后会初始化为 0
+	 * 写入配置参数后赋值 -1
+	 * 端口网络打开后，为打开的文件描述符
+	 */
+	int fd;
 	struct sockaddr *sockaddr;
 	socklen_t		socklen;
 
+	/* socket()的第二个参数*/
 	int type;
 
 	int backlog;
@@ -29,5 +35,7 @@ struct ngx_connection_s {
 };
 
 void ngx_free_connection(ngx_connection_t *);
+
+ngx_listening_t * ngx_create_listening(ngx_conf_t *, void *, socklen_t);
 
 #endif

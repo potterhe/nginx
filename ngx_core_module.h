@@ -8,4 +8,4 @@
 void * ngx_core_module_create_conf(ngx_cycle_t *);
 void ngx_core_module_init_conf(ngx_cycle_t *);
 
-#endif;
+#endif
