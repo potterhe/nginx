@@ -31,11 +31,16 @@ struct ngx_connection_s {
 	 * 在http中，data指向ngx_http_request_t
 	 */
 	void *data;
+
+	/* 连接上的读事件 */
+	ngx_event_t		*read;
 	int fd;//网络连接对应的打开的文件描述符
 };
 
+ngx_connection_t * ngx_get_connection(int);
 void ngx_free_connection(ngx_connection_t *);
 
 ngx_listening_t * ngx_create_listening(ngx_conf_t *, void *, socklen_t);
+int ngx_open_listening_sockets(ngx_cycle_t *);
 
 #endif

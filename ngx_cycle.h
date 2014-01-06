@@ -18,6 +18,20 @@ struct ngx_cycle_s {
 	void *ccf;
 
 	/**
+	 * 当I/O复用机制仅工作在”文件描述符“上时(如select,poll)，
+	 * 使用这个数组存储"文件描述符"到"连接"的映射关系,
+	 * 以便于根据文件描述符快速找到其对应的连接
+	 *
+	 * cycle->files[fd] = ngx_connection_t *;
+	 */
+	ngx_connection_t	**files;
+	/**
+	 * 系统限制(RLIMIT_NOFILE),允许进程打开文件的最大数量
+	 * 这决定了一个进程可以使用的文件描述符的上限
+	 */
+	unsigned int	files_n;
+
+	/**
 	 * 指向空闲连接池链表的首元素
 	 * 每当nginx需要新链接的时候，会直接取这个地址，
 	 * 然后将指针指向链表的下一个元素(free_connections->data)

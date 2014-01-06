@@ -7,6 +7,8 @@
 #include "ngx_connection.h"
 #include "ngx_log.h"
 #include "ngx_conf_file.h"
+#include "ngx_core.h"
+#include "ngx_event.h"
 
 extern ngx_cycle_t *ngx_cycle;
 
@@ -74,6 +76,47 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
 		ls[i].fd = s;
 	}
 	return 0;
+}
+
+ngx_connection_t *
+ngx_get_connection(int s)
+{
+	ngx_event_t	*rev;
+	ngx_connection_t *c;
+
+	c = ngx_cycle->free_connections;
+	if (c == NULL) {
+		ngx_log_error("connections are not enough");
+		return NULL;
+	}
+
+	ngx_cycle->free_connections = c->data;
+	ngx_cycle->free_connection_n--;
+
+	/**
+	 * 建立fd到连接的关联
+	 * 即可以通过“文件描述符”找到其所对应的“连接”对象
+	 *
+	 * 因为I/O复用机制工作在“文件描述符”上,
+	 * 当I/O复用机制告诉我们某个文件描述符上发生了网络事件时，
+	 * 需要找到文件描述符所对应的连接对象，以获取更多应用层信息
+	 *
+	 * 因为文件描述符遵循“最小可用”原则打开，且从0开始,
+	 * 所以用数组（文件描述符作索引）来组织是合适的
+	 *
+	 * 源代码将这个关系存储在全局ngx_cycle结构中
+	 */
+	ngx_cycle->files[s] = c;
+
+	rev = c->read;
+	memset(c, 0, sizeof(ngx_connection_t));
+	c->read = rev;
+	c->fd = s;
+
+	memset(rev, 0, sizeof(ngx_event_t));
+	rev->data = c;
+
+	return c;
 }
 
 /**
