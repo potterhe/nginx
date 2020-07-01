@@ -54,8 +54,11 @@ ngx_master_process_cycle()
     }
     sigemptyset(&set);
 
-    /* 在nginx的源代码中没能找到初始化全局数组 ngx_processes 的代码
+    /* 
+     * 在nginx的源代码中没能找到初始化全局数组 ngx_processes 的代码
      * 这里是一个合适的位置
+     *
+     * 确认是在./configure 阶段生成的
      */
     ngx_init_processes_array();
 
